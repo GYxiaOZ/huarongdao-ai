@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华容道</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>华容道</h1>
+
+        <div class="controls">
+            <span>难度：</span>
+            <button class="difficulty-btn active" data-level="1">简单</button>
+            <button class="difficulty-btn" data-level="2">中等</button>
+            <button class="difficulty-btn" data-level="3">困难</button>
+        </div>
+
+        <div class="game-container">
+            <canvas id="gameCanvas" width="320" height="400"></canvas>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span>步数：</span>
+                <span id="moves">0</span>
+            </div>
+            <div class="stat-item">
+                <span>时间：</span>
+                <span id="time">00:00</span>
+            </div>
+        </div>
+
+        <div class="game-buttons">
+            <button id="resetBtn">重置</button>
+            <button id="pauseBtn">暂停</button>
+        </div>
+
+        <div class="best-records">
+            <h3>最佳记录</h3>
+            <div class="record-item">
+                <span>简单：</span>
+                <span id="record1">-- / --</span>
+            </div>
+            <div class="record-item">
+                <span>中等：</span>
+                <span id="record2">-- / --</span>
+            </div>
+            <div class="record-item">
+                <span>困难：</span>
+                <span id="record3">-- / --</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="victoryModal" class="modal">
+        <div class="modal-content">
+            <h2>恭喜通关！</h2>
+            <p id="victoryMessage"></p>
+            <button id="newGameBtn">再来一局</button>
+        </div>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
