@@ -120,6 +120,49 @@ function bindEvents() {
             game.handleMouseUp();
         }
     });
+
+    // Canvas触摸开始事件（开始拖拽）
+    game.canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const rect = game.canvas.getBoundingClientRect();
+        const scaleX = game.canvas.width / rect.width;
+        const scaleY = game.canvas.height / rect.height;
+
+        const canvasX = (e.touches[0].clientX - rect.left) * scaleX;
+        const canvasY = (e.touches[0].clientY - rect.top) * scaleY;
+
+        game.handleMouseDown(canvasX, canvasY);
+    });
+
+    // Canvas触摸移动事件（拖拽预览）
+    game.canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const rect = game.canvas.getBoundingClientRect();
+        const scaleX = game.canvas.width / rect.width;
+        const scaleY = game.canvas.height / rect.height;
+
+        const canvasX = (e.touches[0].clientX - rect.left) * scaleX;
+        const canvasY = (e.touches[0].clientY - rect.top) * scaleY;
+
+        game.handleMouseMove(canvasX, canvasY);
+
+        if (game.dragState.isDragging && !game.dragState.moved) {
+            game.render();
+        }
+    });
+
+    // Canvas触摸结束事件（结束拖拽）
+    game.canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        game.handleMouseUp();
+    });
+
+    // 全局触摸结束事件（防止触摸移出画布后释放）
+    document.addEventListener('touchend', () => {
+        if (game.dragState.isDragging) {
+            game.handleMouseUp();
+        }
+    });
 }
 
 /**
