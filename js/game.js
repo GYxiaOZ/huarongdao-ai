@@ -113,8 +113,25 @@ class Game {
     render() {
         const { ctx, canvas } = this;
 
-        ctx.fillStyle = '#2c3e50';
+        // 绘制更精美的背景
+        const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        bgGradient.addColorStop(0, '#3d2817');
+        bgGradient.addColorStop(0.5, '#2c1810');
+        bgGradient.addColorStop(1, '#1f1611');
+        ctx.fillStyle = bgGradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 添加木纹效果
+        ctx.globalAlpha = 0.07;
+        for (let i = 0; i < canvas.width; i += 30) {
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i + 15, canvas.height);
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1.0;
 
         this.drawGrid();
 
@@ -134,21 +151,39 @@ class Game {
     drawGrid() {
         const { ctx } = this;
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        // 主网格线 - 更精细的金色边框
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+        ctx.lineWidth = 2;
+
+        // 外边框
+        ctx.strokeRect(0, 0, this.gridWidth * this.cellSize, this.gridHeight * this.cellSize);
+
+        // 内部网格线
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.1)';
         ctx.lineWidth = 1;
 
-        for (let x = 0; x <= this.gridWidth; x++) {
+        for (let x = 1; x < this.gridWidth; x++) {
             ctx.beginPath();
             ctx.moveTo(x * this.cellSize, 0);
             ctx.lineTo(x * this.cellSize, this.gridHeight * this.cellSize);
             ctx.stroke();
         }
 
-        for (let y = 0; y <= this.gridHeight; y++) {
+        for (let y = 1; y < this.gridHeight; y++) {
             ctx.beginPath();
             ctx.moveTo(0, y * this.cellSize);
             ctx.lineTo(this.gridWidth * this.cellSize, y * this.cellSize);
             ctx.stroke();
+        }
+
+        // 添加微妙的网格点装饰
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.15)';
+        for (let x = 0; x <= this.gridWidth; x++) {
+            for (let y = 0; y <= this.gridHeight; y++) {
+                ctx.beginPath();
+                ctx.arc(x * this.cellSize, y * this.cellSize, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     }
 
@@ -159,29 +194,80 @@ class Game {
         const width = piece.width * this.cellSize - this.padding * 2;
         const height = piece.height * this.cellSize - this.padding * 2;
 
+        // 创建更精美的渐变效果
         const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
-        gradient.addColorStop(0, piece.color);
-        gradient.addColorStop(1, this.darkenColor(piece.color, 30));
+        
+        // 曹操（主将）特殊处理
+        if (piece.id === 'C') {
+            gradient.addColorStop(0, '#d4af37');
+            gradient.addColorStop(0.5, '#ffd700');
+            gradient.addColorStop(1, '#b8860b');
+        } else {
+            // 其他武将
+            gradient.addColorStop(0, piece.color);
+            gradient.addColorStop(0.5, this.lightenColor(piece.color, 15));
+            gradient.addColorStop(1, this.darkenColor(piece.color, 20));
+        }
 
+        // 绘制阴影
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 3;
+
+        // 绘制主体
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.roundRect(x, y, width, height, 8);
+        ctx.roundRect(x, y, width, height, 10);
         ctx.fill();
 
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.lineWidth = 2;
+        // 重置阴影
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        // 添加高光效果
+        const highlightGradient = ctx.createLinearGradient(x, y, x, y + height);
+        highlightGradient.addColorStop(0, 'rgba(255, 255, 255, 0.25)');
+        highlightGradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+        highlightGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        ctx.fillStyle = highlightGradient;
+        ctx.beginPath();
+        ctx.roundRect(x + 3, y + 3, width - 6, height / 3, 6);
+        ctx.fill();
+
+        // 添加边框
+        ctx.strokeStyle = piece.id === 'C' ? 'rgba(212, 175, 55, 0.8)' : 'rgba(255, 255, 255, 0.3)';
+        ctx.lineWidth = piece.id === 'C' ? 3 : 2;
         ctx.stroke();
 
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-        ctx.beginPath();
-        ctx.roundRect(x + 4, y + 4, width - 8, height / 3, 4);
-        ctx.fill();
-
+        // 绘制文字
         ctx.fillStyle = '#fff';
-        ctx.font = 'bold 24px "Microsoft YaHei"';
+        ctx.font = piece.id === 'C' ? 'bold 28px "Microsoft YaHei"' : 'bold 24px "Microsoft YaHei"';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 2;
+        ctx.shadowOffsetX = 1;
+        ctx.shadowOffsetY = 1;
         ctx.fillText(piece.name, x + width / 2, y + height / 2);
+        
+        // 重置文字阴影
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+
+        // 为曹操添加特殊装饰
+        if (piece.id === 'C') {
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x + 8, y + 8, width - 16, height - 16, 6);
+            ctx.stroke();
+        }
     }
 
     drawPiecePreview(piece, x, y) {
@@ -191,14 +277,36 @@ class Game {
         const width = piece.width * this.cellSize - this.padding * 2;
         const height = piece.height * this.cellSize - this.padding * 2;
 
-        ctx.globalAlpha = 0.4;
-        ctx.fillStyle = piece.color;
+        // 更精美的预览效果
+        ctx.globalAlpha = 0.5;
+        
+        // 添加发光效果
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 15;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        // 绘制预览主体
+        const previewGradient = ctx.createLinearGradient(drawX, drawY, drawX + width, drawY + height);
+        previewGradient.addColorStop(0, piece.color);
+        previewGradient.addColorStop(1, this.darkenColor(piece.color, 10));
+        
+        ctx.fillStyle = previewGradient;
         ctx.beginPath();
-        ctx.roundRect(drawX, drawY, width, height, 8);
+        ctx.roundRect(drawX, drawY, width, height, 10);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255, 215, 0, 0.8)';
+        
+        // 重置阴影
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+        
+        // 添加金色边框指示可移动位置
+        ctx.strokeStyle = '#ffd700';
         ctx.lineWidth = 3;
+        ctx.setLineDash([5, 3]);
         ctx.stroke();
+        ctx.setLineDash([]);
+        
         ctx.globalAlpha = 1.0;
     }
 
@@ -207,17 +315,44 @@ class Game {
         const x = 1.5 * this.cellSize;
         const y = 4 * this.cellSize;
 
-        ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+        // 绘制更精美的出口标识
+        ctx.fillStyle = 'rgba(255, 215, 0, 0.25)';
         ctx.beginPath();
-        ctx.moveTo(x, y + 20);
-        ctx.lineTo(x + this.cellSize, y + 20);
-        ctx.lineTo(x + this.cellSize / 2, y + this.cellSize);
+        ctx.moveTo(x - 5, y + 15);
+        ctx.lineTo(x + this.cellSize + 5, y + 15);
+        ctx.lineTo(x + this.cellSize / 2, y + this.cellSize + 5);
         ctx.closePath();
         ctx.fill();
 
+        // 添加发光效果
+        ctx.shadowColor = '#ffd700';
+        ctx.shadowBlur = 10;
+        
+        // 绘制箭头
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(x + this.cellSize / 2, y + 20);
+        ctx.lineTo(x + this.cellSize / 2, y + this.cellSize - 5);
+        ctx.stroke();
+        
+        // 箭头头部
+        ctx.beginPath();
+        ctx.moveTo(x + this.cellSize / 2, y + this.cellSize - 5);
+        ctx.lineTo(x + this.cellSize / 2 - 8, y + this.cellSize - 15);
+        ctx.moveTo(x + this.cellSize / 2, y + this.cellSize - 5);
+        ctx.lineTo(x + this.cellSize / 2 + 8, y + this.cellSize - 15);
+        ctx.stroke();
+        
+        // 重置阴影
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0;
+
+        // 绘制文字
         ctx.fillStyle = '#ffd700';
-        ctx.font = '14px "Microsoft YaHei"';
+        ctx.font = 'bold 16px "Microsoft YaHei"';
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillText('出口', x + this.cellSize / 2, y + this.cellSize + 25);
     }
 
@@ -226,6 +361,14 @@ class Game {
         const r = Math.max(0, parseInt(hex.substr(0, 2), 16) - amount);
         const g = Math.max(0, parseInt(hex.substr(2, 2), 16) - amount);
         const b = Math.max(0, parseInt(hex.substr(4, 2), 16) - amount);
+        return '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0');
+    }
+
+    lightenColor(color, amount) {
+        const hex = color.replace('#', '');
+        const r = Math.min(255, parseInt(hex.substr(0, 2), 16) + amount);
+        const g = Math.min(255, parseInt(hex.substr(2, 2), 16) + amount);
+        const b = Math.min(255, parseInt(hex.substr(4, 2), 16) + amount);
         return '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0');
     }
 

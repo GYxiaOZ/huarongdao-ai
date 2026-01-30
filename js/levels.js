@@ -125,13 +125,13 @@ const LEVELS = {
             // 曹操 (2x2) - 顶部中央
             { id: 'C', type: PIECE_TYPES.CAOCAO, x: 1, y: 0, width: 2, height: 2, color: PIECE_COLORS.caocao, name: '曹操' },
             // 竖将 (1x2) - 左右两侧
-            { id: 'G', type: PIECE_TYPES.GENERAL_V, x: 0, y: 0, width: 1, height: 2, color: PIECE_COLORS.general_v, name: '关羽' },
+            { id: 'G', type: PIECE_TYPES.GENERAL_V, x: 0, y: 0, width: 1, height: 2, color: PIECE_COLORS.general_v, name: '黄忠' },
             { id: 'Z', type: PIECE_TYPES.GENERAL_V, x: 3, y: 0, width: 1, height: 2, color: PIECE_COLORS.general_v, name: '张飞' },
             // 竖将 (1x2) - 下方两侧
             { id: 'Y', type: PIECE_TYPES.GENERAL_V, x: 0, y: 2, width: 1, height: 2, color: PIECE_COLORS.general_v, name: '赵云' },
             { id: 'M', type: PIECE_TYPES.GENERAL_V, x: 3, y: 2, width: 1, height: 2, color: PIECE_COLORS.general_v, name: '马超' },
             // 横将 (2x1) - 中央
-            { id: 'H', type: PIECE_TYPES.GENERAL_H, x: 1, y: 2, width: 2, height: 1, color: PIECE_COLORS.general_h, name: '黄忠' },
+            { id: 'H', type: PIECE_TYPES.GENERAL_H, x: 1, y: 2, width: 2, height: 1, color: PIECE_COLORS.general_h, name: '关羽' },
             // 兵卒 (1x1) - 底部
             { id: 'S1', type: PIECE_TYPES.SOLDIER, x: 1, y: 3, width: 1, height: 1, color: PIECE_COLORS.soldier, name: '兵' },
             { id: 'S2', type: PIECE_TYPES.SOLDIER, x: 2, y: 3, width: 1, height: 1, color: PIECE_COLORS.soldier, name: '兵' },

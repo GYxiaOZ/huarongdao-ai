@@ -163,6 +163,13 @@ function bindEvents() {
             game.handleMouseUp();
         }
     });
+
+    // 全局触摸移动事件（在拖动时阻止页面滚动）
+    document.addEventListener('touchmove', (e) => {
+        if (game.dragState.isDragging) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 }
 
 /**
