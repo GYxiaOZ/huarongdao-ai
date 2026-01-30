@@ -104,5 +104,117 @@ const Storage = {
      */
     clearAllRecords() {
         localStorage.removeItem(this.STORAGE_KEY);
+    },
+
+    /**
+     * 自定义关卡存储键名
+     */
+    CUSTOM_LEVELS_KEY: 'huarongdao_custom_levels',
+
+    /**
+     * 获取所有自定义关卡
+     * @returns {Array} 自定义关卡数组
+     */
+    getCustomLevels() {
+        const levels = localStorage.getItem(this.CUSTOM_LEVELS_KEY);
+        return levels ? JSON.parse(levels) : [];
+    },
+
+    /**
+     * 保存/更新自定义关卡
+     * @param {string} id - 关卡ID
+     * @param {Object} config - 关卡配置
+     * @returns {boolean} 是否保存成功
+     */
+    saveCustomLevel(id, config) {
+        const levels = this.getCustomLevels();
+        const existingIndex = levels.findIndex(level => level.id === id);
+
+        const levelData = {
+            id: id,
+            name: config.name || '未命名关卡',
+            description: config.description || '用户自定义',
+            pieces: config.pieces || [],
+            createdAt: config.createdAt || Date.now(),
+            updatedAt: Date.now()
+        };
+
+        if (existingIndex >= 0) {
+            levels[existingIndex] = levelData;
+        } else {
+            levels.push(levelData);
+        }
+
+        localStorage.setItem(this.CUSTOM_LEVELS_KEY, JSON.stringify(levels));
+        return true;
+    },
+
+    /**
+     * 删除指定自定义关卡
+     * @param {string} id - 关卡ID
+     * @returns {boolean} 是否删除成功
+     */
+    deleteCustomLevel(id) {
+        const levels = this.getCustomLevels();
+        const filteredLevels = levels.filter(level => level.id !== id);
+
+        if (filteredLevels.length === levels.length) {
+            return false;
+        }
+
+        localStorage.setItem(this.CUSTOM_LEVELS_KEY, JSON.stringify(filteredLevels));
+        return true;
+    },
+
+    /**
+     * 清除所有自定义关卡
+     * @returns {boolean} 是否清除成功
+     */
+    clearCustomLevels() {
+        localStorage.removeItem(this.CUSTOM_LEVELS_KEY);
+        return true;
+    },
+
+    /**
+     * 获取自定义关卡的记录
+     * @param {string} id - 关卡ID
+     * @returns {Object} 该关卡的记录
+     */
+    getCustomRecord(id) {
+        const records = this.getRecords();
+        const key = `custom_${id}`;
+        return records[key] || { bestMoves: null, bestTime: null };
+    },
+
+    /**
+     * 更新自定义关卡记录（如果更好）
+     * @param {string} id - 关卡ID
+     * @param {number} moves - 步数
+     * @param {number} time - 时间（秒）
+     * @returns {boolean} 是否更新了记录
+     */
+    updateCustomRecord(id, moves, time) {
+        const records = this.getRecords();
+        const key = `custom_${id}`;
+        const current = records[key] || { bestMoves: null, bestTime: null };
+
+        let updated = false;
+
+        if (current.bestMoves === null || moves < current.bestMoves) {
+            current.bestMoves = moves;
+            updated = true;
+        }
+
+        if (current.bestTime === null || time < current.bestTime) {
+            current.bestTime = time;
+            updated = true;
+        }
+
+        if (updated) {
+            records[key] = current;
+            this.saveRecords(records);
+        }
+
+        return updated;
     }
 };

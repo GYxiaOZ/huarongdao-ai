@@ -49,17 +49,33 @@ class Game {
 
         // 拖拽移动阈值（像素）
         this.dragThreshold = 30;
+
+        // 编辑模式相关
+        this.isEditMode = false;
+        this.selectedPieceType = null;
+        this.customLevelId = null;
+        this.editingLevelName = '';
+        this.previewPosition = null;
     }
 
     init(level = 1) {
-        this.level = level;
-        this.currentLevelConfig = getLevelConfig(level);
+        if (typeof level === 'string' && level.startsWith(CUSTOM_LEVELS_PREFIX)) {
+            this.level = 'custom';
+            this.customLevelId = level;
+            this.currentLevelConfig = getCustomLevelConfig(level);
+        } else {
+            this.level = level;
+            this.customLevelId = null;
+            this.currentLevelConfig = getLevelConfig(level);
+        }
         this.reset();
         this.render();
     }
 
     reset() {
-        this.pieces = JSON.parse(JSON.stringify(this.currentLevelConfig.pieces));
+        if (this.currentLevelConfig && this.currentLevelConfig.pieces) {
+            this.pieces = JSON.parse(JSON.stringify(this.currentLevelConfig.pieces));
+        }
         this.moves = 0;
         this.time = 0;
         this.isSolved = false;
@@ -117,6 +133,10 @@ class Game {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         this.drawGrid();
+
+        if (this.isEditMode && this.previewPosition && this.selectedPieceType) {
+            this.drawPreview();
+        }
 
         this.pieces.forEach(piece => {
             if (this.dragState.isDragging && this.dragState.piece === piece && !this.dragState.moved) {
@@ -200,6 +220,34 @@ class Game {
         ctx.globalAlpha = 1.0;
     }
 
+    drawPreview() {
+        if (!this.previewPosition || !this.selectedPieceType) {
+            return;
+        }
+
+        const pieceConfig = this.getPieceConfigByType(this.selectedPieceType);
+        if (!pieceConfig) {
+            return;
+        }
+
+        const { ctx } = this;
+        const x = this.previewPosition.x * this.cellSize + this.padding;
+        const y = this.previewPosition.y * this.cellSize + this.padding;
+        const width = pieceConfig.width * this.cellSize - this.padding * 2;
+        const height = pieceConfig.height * this.cellSize - this.padding * 2;
+
+        ctx.globalAlpha = 0.5;
+
+        ctx.fillStyle = pieceConfig.color;
+        ctx.fillRect(x, y, width, height);
+
+        ctx.strokeStyle = '#ffd700';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x, y, width, height);
+
+        ctx.globalAlpha = 1.0;
+    }
+
     drawExit() {
         const { ctx } = this;
         const x = 1.5 * this.cellSize;
@@ -246,6 +294,16 @@ class Game {
             return;
         }
 
+        if (this.isEditMode) {
+            const piece = this.getPieceAt(gridX, gridY);
+            if (piece) {
+                this.removePiece(piece);
+            } else if (this.selectedPieceType) {
+                this.addPieceToBoard(this.selectedPieceType, gridX, gridY);
+            }
+            return;
+        }
+
         const piece = this.getPieceAt(gridX, gridY);
         if (!piece) {
             return;
@@ -263,6 +321,19 @@ class Game {
     }
 
     handleMouseMove(canvasX, canvasY) {
+        if (this.isEditMode) {
+            const gridX = Math.floor(canvasX / this.cellSize);
+            const gridY = Math.floor(canvasY / this.cellSize);
+
+            if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
+                this.previewPosition = { x: gridX, y: gridY };
+            } else {
+                this.previewPosition = null;
+            }
+            this.render();
+            return;
+        }
+
         if (!this.dragState.isDragging || this.dragState.moved) {
             return;
         }
@@ -490,7 +561,11 @@ class Game {
             this.isSolved = true;
             this.stopTimer();
 
-            Storage.updateRecord(this.level, this.moves, this.time);
+            if (this.customLevelId) {
+                Storage.updateCustomRecord(this.customLevelId, this.moves, this.time);
+            } else {
+                Storage.updateRecord(this.level, this.moves, this.time);
+            }
 
             setTimeout(() => this.showVictory(), 300);
         }
@@ -504,8 +579,10 @@ class Game {
         const secs = this.time % 60;
         const timeStr = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
 
+        const levelName = this.customLevelId ? this.editingLevelName : this.currentLevelConfig.name;
+
         message.innerHTML = `
-            <strong>${this.currentLevelConfig.name}</strong><br>
+            <strong>${levelName}</strong><br>
             步数：${this.moves}<br>
             时间：${timeStr}
         `;
@@ -519,5 +596,231 @@ class Game {
             const element = document.getElementById('record' + i);
             element.textContent = Storage.formatRecord(record);
         }
+
+        if (this.customLevelId) {
+            const record = Storage.getCustomRecord(this.customLevelId);
+            document.getElementById('customRecord').textContent = Storage.formatRecord(record);
+            document.getElementById('customRecordLabel').textContent = this.editingLevelName + '：';
+            document.getElementById('customRecordItem').style.display = 'flex';
+        }
+    }
+
+    /**
+     * 进入编辑模式
+     * @param {string} customLevelId - 自定义关卡ID，如果是新关卡则为null
+     */
+    enterEditMode(customLevelId = null) {
+        this.isEditMode = true;
+        this.customLevelId = customLevelId;
+        this.editingLevelName = '';
+        this.selectedPieceType = null;
+        this.previewPosition = null;
+
+        if (customLevelId) {
+            const levelConfig = getCustomLevelConfig(customLevelId);
+            if (levelConfig) {
+                this.pieces = JSON.parse(JSON.stringify(levelConfig.pieces));
+                this.editingLevelName = levelConfig.name;
+                this.customLevelId = customLevelId;
+            }
+        } else {
+            this.pieces = [];
+        }
+
+        this.moves = 0;
+        this.time = 0;
+        this.isSolved = false;
+        this.isPaused = false;
+        this.isAnimating = false;
+        this.stopTimer();
+        this.render();
+    }
+
+    /**
+     * 退出编辑模式
+     */
+    exitEditMode() {
+        this.isEditMode = false;
+        this.selectedPieceType = null;
+        this.customLevelId = null;
+        this.editingLevelName = '';
+        this.previewPosition = null;
+        this.render();
+    }
+
+    /**
+     * 在指定位置添加滑块
+     * @param {string} type - 滑块类型
+     * @param {number} x - 网格X坐标
+     * @param {number} y - 网格Y坐标
+     * @returns {boolean} 是否添加成功
+     */
+    addPieceToBoard(type, x, y) {
+        const pieceConfig = this.getPieceConfigByType(type);
+        if (!pieceConfig) {
+            return false;
+        }
+
+        const newPiece = {
+            id: this.generatePieceId(),
+            type: type,
+            x: x,
+            y: y,
+            width: pieceConfig.width,
+            height: pieceConfig.height,
+            color: pieceConfig.color,
+            name: pieceConfig.name
+        };
+
+        if (!this.canPlacePiece(newPiece)) {
+            return false;
+        }
+
+        this.pieces.push(newPiece);
+        this.render();
+        return true;
+    }
+
+    /**
+     * 移除滑块
+     * @param {Object} piece - 要移除的滑块
+     * @returns {boolean} 是否移除成功
+     */
+    removePiece(piece) {
+        const index = this.pieces.indexOf(piece);
+        if (index > -1) {
+            this.pieces.splice(index, 1);
+            this.render();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * 验证棋盘布局
+     * @returns {Object} 验证结果 { valid: boolean, message: string }
+     */
+    validateLayout() {
+        if (this.pieces.length === 0) {
+            return { valid: false, message: '请至少添加一个滑块' };
+        }
+
+        const caocao = this.pieces.find(p => p.type === PIECE_TYPES.CAOCAO);
+        if (!caocao) {
+            return { valid: false, message: '必须包含一个曹操' };
+        }
+
+        for (const piece of this.pieces) {
+            if (!this.isPieceInBounds(piece)) {
+                return { valid: false, message: '滑块超出边界' };
+            }
+        }
+
+        for (let i = 0; i < this.pieces.length; i++) {
+            for (let j = i + 1; j < this.pieces.length; j++) {
+                if (this.piecesOverlap(this.pieces[i], this.pieces[j])) {
+                    return { valid: false, message: '滑块重叠' };
+                }
+            }
+        }
+
+        return { valid: true, message: '布局有效' };
+    }
+
+    /**
+     * 获取当前关卡数据用于保存
+     * @returns {Object} 关卡数据
+     */
+    getLevelDataForSave() {
+        return {
+            name: this.editingLevelName || '未命名关卡',
+            description: '用户自定义',
+            pieces: JSON.parse(JSON.stringify(this.pieces))
+        };
+    }
+
+    /**
+     * 加载指定自定义关卡
+     * @param {string} id - 关卡ID
+     * @returns {boolean} 是否加载成功
+     */
+    loadCustomLevel(id) {
+        const levelConfig = getCustomLevelConfig(id);
+        if (!levelConfig) {
+            return false;
+        }
+
+        this.customLevelId = id;
+        this.editingLevelName = levelConfig.name;
+        this.pieces = JSON.parse(JSON.stringify(levelConfig.pieces));
+        this.render();
+        return true;
+    }
+
+    /**
+     * 根据类型获取滑块配置
+     * @param {string} type - 滑块类型
+     * @returns {Object|null} 滑块配置
+     */
+    getPieceConfigByType(type) {
+        const configs = {
+            [PIECE_TYPES.CAOCAO]: { width: 2, height: 2, color: PIECE_COLORS.caocao, name: '曹操' },
+            [PIECE_TYPES.GENERAL_V]: { width: 1, height: 2, color: PIECE_COLORS.general_v, name: '竖将' },
+            [PIECE_TYPES.GENERAL_H]: { width: 2, height: 1, color: PIECE_COLORS.general_h, name: '横将' },
+            [PIECE_TYPES.SOLDIER]: { width: 1, height: 1, color: PIECE_COLORS.soldier, name: '兵卒' }
+        };
+        return configs[type] || null;
+    }
+
+    /**
+     * 生成滑块ID
+     * @returns {string} 唯一的滑块ID
+     */
+    generatePieceId() {
+        return 'P_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    }
+
+    /**
+     * 检查滑块是否可以放置
+     * @param {Object} piece - 滑块对象
+     * @returns {boolean} 是否可以放置
+     */
+    canPlacePiece(piece) {
+        if (!this.isPieceInBounds(piece)) {
+            return false;
+        }
+
+        for (const other of this.pieces) {
+            if (this.piecesOverlap(piece, other)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * 检查滑块是否在边界内
+     * @param {Object} piece - 滑块对象
+     * @returns {boolean} 是否在边界内
+     */
+    isPieceInBounds(piece) {
+        return piece.x >= 0 &&
+               piece.y >= 0 &&
+               piece.x + piece.width <= this.gridWidth &&
+               piece.y + piece.height <= this.gridHeight;
+    }
+
+    /**
+     * 检查两个滑块是否重叠
+     * @param {Object} piece1 - 第一个滑块
+     * @param {Object} piece2 - 第二个滑块
+     * @returns {boolean} 是否重叠
+     */
+    piecesOverlap(piece1, piece2) {
+        return piece1.x < piece2.x + piece2.width &&
+               piece1.x + piece1.width > piece2.x &&
+               piece1.y < piece2.y + piece2.height &&
+               piece1.y + piece1.height > piece2.y;
     }
 }

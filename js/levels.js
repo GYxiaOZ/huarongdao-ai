@@ -11,6 +11,9 @@ const PIECE_TYPES = {
     GENERAL_H: 'general_h'  // 五虎将: 2x1 (横)
 };
 
+// 自定义关卡ID前缀
+const CUSTOM_LEVELS_PREFIX = 'custom_';
+
 // 滑块颜色配置
 const PIECE_COLORS = {
     caocao: '#e74c3c',      // 红色 - 曹操
@@ -210,5 +213,60 @@ function getLevelConfig(level) {
         pieces: JSON.parse(JSON.stringify(levelConfig.pieces)),
         solution: JSON.parse(JSON.stringify(levelConfig.solution)),
         minMoves: levelConfig.minMoves
+    };
+}
+
+/**
+ * 从存储获取指定自定义关卡配置
+ * @param {string} id - 自定义关卡ID
+ * @returns {Object|null} 关卡配置的深拷贝，如果不存在则返回null
+ */
+function getCustomLevelConfig(id) {
+    const levels = Storage.getCustomLevels();
+    const level = levels.find(l => l.id === id);
+
+    if (!level) {
+        return null;
+    }
+
+    return {
+        name: level.name,
+        description: level.description,
+        pieces: JSON.parse(JSON.stringify(level.pieces)),
+        id: level.id,
+        createdAt: level.createdAt,
+        updatedAt: level.updatedAt
+    };
+}
+
+/**
+ * 获取所有自定义关卡列表
+ * @returns {Array} 自定义关卡数组
+ */
+function getAllCustomLevels() {
+    return Storage.getCustomLevels();
+}
+
+/**
+ * 生成唯一的自定义关卡ID
+ * @returns {string} 唯一的关卡ID
+ */
+function generateCustomLevelId() {
+    return CUSTOM_LEVELS_PREFIX + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+/**
+ * 创建新的自定义关卡配置
+ * @param {string} name - 关卡名称
+ * @returns {Object} 新的关卡配置对象
+ */
+function createCustomLevelConfig(name) {
+    return {
+        id: generateCustomLevelId(),
+        name: name || '未命名关卡',
+        description: '用户自定义',
+        pieces: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
     };
 }

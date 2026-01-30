@@ -85,6 +85,230 @@ h1 {
     box-shadow: 3px 3px 0 #8b6914;
 }
 
+.custom-editor {
+    background: #2d1b0e;
+    padding: 15px;
+    border: 3px solid #8b6914;
+    margin-bottom: 20px;
+    box-shadow: 3px 3px 0 #1a0f08;
+}
+
+.editor-header {
+    margin-bottom: 15px;
+}
+
+.level-title-input {
+    width: 100%;
+    padding: 10px;
+    border: 3px solid #d4af37;
+    background: #3d2817;
+    color: #ffd700;
+    font-size: 1em;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: 2px 2px 0 #1a0f08;
+}
+
+.level-title-input::placeholder {
+    color: #8b6914;
+}
+
+.level-title-input:focus {
+    outline: none;
+    border-color: #ffd700;
+}
+
+.piece-toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.piece-btn {
+    width: 60px;
+    height: 60px;
+    border: 3px solid #d4af37;
+    background: #3d2817;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 #1a0f08;
+    transition: all 0.1s;
+}
+
+.piece-btn:hover {
+    background: #4d3827;
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 #1a0f08;
+}
+
+.piece-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #1a0f08;
+}
+
+.piece-btn.selected {
+    background: #ffd700;
+    border-color: #fff;
+    box-shadow: 3px 3px 0 #8b6914;
+}
+
+.piece-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #d4af37;
+}
+
+.piece-btn.selected .piece-icon {
+    color: #1a0f08;
+}
+
+.caocao-icon {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.general-v-icon {
+    background: #f39c12;
+}
+
+.general-h-icon {
+    background: #27ae60;
+}
+
+.soldier-icon {
+    background: #3498db;
+}
+
+.editor-actions {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.editor-btn {
+    padding: 8px 16px;
+    border: 3px solid #fff;
+    background: #3d2817;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 3px 3px 0 #1a0f08;
+    min-width: 70px;
+}
+
+.editor-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 #1a0f08;
+}
+
+.editor-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 #1a0f08;
+}
+
+#saveLevelBtn {
+    background: #27ae60;
+    border-color: #2ecc71;
+}
+
+#loadLevelBtn {
+    background: #3498db;
+    border-color: #5dade2;
+}
+
+#deleteLevelBtn {
+    background: #c0392b;
+    border-color: #e74c3c;
+}
+
+#exportLevelBtn {
+    background: #f39c12;
+    border-color: #f1c40f;
+}
+
+#importLevelBtn {
+    background: #9b59b6;
+    border-color: #8e44ad;
+}
+
+#testLevelBtn {
+    background: #1abc9c;
+    border-color: #16a085;
+}
+
+#returnBtn {
+    background: #95a5a6;
+    border-color: #7f8c8d;
+}
+
+.custom-level-list {
+    background: #3d2817;
+    padding: 12px;
+    border: 3px solid #8b6914;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.custom-level-list h4 {
+    color: #ffd700;
+    font-size: 1em;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.level-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.level-item {
+    background: #2d1b0e;
+    padding: 10px 12px;
+    border: 2px solid #4d3827;
+    cursor: pointer;
+    transition: all 0.1s;
+}
+
+.level-item:hover {
+    background: #3d2817;
+    border-color: #8b6914;
+    transform: translate(-1px, 0);
+}
+
+.level-item.active {
+    background: #ffd700;
+    border-color: #fff;
+    color: #1a0f08;
+}
+
+.level-item-name {
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.level-item-info {
+    font-size: 0.85em;
+    color: #8b6914;
+}
+
+.level-item.active .level-item-info {
+    color: #5c4510;
+}
+
 .game-container {
     display: flex;
     justify-content: center;
@@ -342,6 +566,37 @@ h1 {
 
     .record-item {
         padding: 8px 10px;
+    }
+
+    .custom-editor {
+        padding: 12px;
+    }
+
+    .piece-toolbar {
+        gap: 8px;
+    }
+
+    .piece-btn {
+        width: 50px;
+        height: 50px;
+    }
+
+    .piece-icon {
+        font-size: 1em;
+    }
+
+    .editor-actions {
+        gap: 6px;
+    }
+
+    .editor-btn {
+        padding: 6px 12px;
+        font-size: 0.8em;
+        min-width: 60px;
+    }
+
+    .custom-level-list {
+        max-height: 150px;
     }
 }
 

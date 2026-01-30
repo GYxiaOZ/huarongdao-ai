@@ -15,11 +15,50 @@
             <button class="difficulty-btn active" data-level="1">简单</button>
             <button class="difficulty-btn" data-level="2">中等</button>
             <button class="difficulty-btn" data-level="3">困难</button>
+            <button class="difficulty-btn" data-level="custom">自定义</button>
         </div>
 
         <div class="game-container">
             <canvas id="gameCanvas" width="320" height="400"></canvas>
         </div>
+
+        <div id="customEditor" class="custom-editor" style="display: none;">
+            <div class="editor-header">
+                <input type="text" id="levelTitle" class="level-title-input" placeholder="输入关卡标题" maxlength="20">
+            </div>
+
+            <div class="piece-toolbar">
+                <button class="piece-btn" data-type="caocao" title="曹操 (2x2)">
+                    <span class="piece-icon caocao-icon">曹</span>
+                </button>
+                <button class="piece-btn" data-type="general_v" title="竖将 (1x2)">
+                    <span class="piece-icon general-v-icon">竖</span>
+                </button>
+                <button class="piece-btn" data-type="general_h" title="横将 (2x1)">
+                    <span class="piece-icon general-h-icon">横</span>
+                </button>
+                <button class="piece-btn" data-type="soldier" title="兵卒 (1x1)">
+                    <span class="piece-icon soldier-icon">兵</span>
+                </button>
+            </div>
+
+            <div class="editor-actions">
+                <button id="saveLevelBtn" class="editor-btn">保存</button>
+                <button id="loadLevelBtn" class="editor-btn">加载</button>
+                <button id="deleteLevelBtn" class="editor-btn">删除</button>
+                <button id="exportLevelBtn" class="editor-btn">导出</button>
+                <button id="importLevelBtn" class="editor-btn">导入</button>
+                <button id="testLevelBtn" class="editor-btn">测试</button>
+                <button id="returnBtn" class="editor-btn">返回</button>
+            </div>
+
+            <div class="custom-level-list">
+                <h4>自定义关卡列表</h4>
+                <div id="levelListContainer" class="level-list-container"></div>
+            </div>
+        </div>
+
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
 
         <div class="stats">
             <div class="stat-item">
@@ -50,6 +89,10 @@
             <div class="record-item">
                 <span>困难：</span>
                 <span id="record3">-- / --</span>
+            </div>
+            <div class="record-item" id="customRecordItem" style="display: none;">
+                <span id="customRecordLabel">自定义：</span>
+                <span id="customRecord">-- / --</span>
             </div>
         </div>
     </div>
