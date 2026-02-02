@@ -9,25 +9,25 @@
 <body>
     <div class="container">
         <h1>华容道</h1>
+        <div class="ai-hint">🤖 本程序完全由 AI 生成</div>
 
         <div class="controls">
             <span>难度：</span>
-            <button class="difficulty-btn active" data-level="1">简单</button>
-            <button class="difficulty-btn" data-level="2">中等</button>
-            <button class="difficulty-btn" data-level="3">困难</button>
-            <button class="difficulty-btn" data-level="custom">自定义</button>
+            <select id="levelSelect" class="level-select">
+                <optgroup label="预设关卡">
+                    <option value="1" selected>简单 - 飞燕归巢</option>
+                    <option value="2">中等 - 层层设防</option>
+                    <option value="3">困难 - 横刀立马</option>
+                </optgroup>
+                <optgroup label="自定义关卡" id="customLevelsOptgroup">
+                    <option value="custom">📝 创建/编辑自定义关卡...</option>
+                </optgroup>
+            </select>
         </div>
 
-        <div class="game-container">
-            <canvas id="gameCanvas" width="320" height="400"></canvas>
-        </div>
-
-        <div id="customEditor" class="custom-editor" style="display: none;">
-            <div class="editor-header">
-                <input type="text" id="levelTitle" class="level-title-input" placeholder="输入关卡标题" maxlength="20">
-            </div>
-
-            <div class="piece-toolbar">
+        <div class="game-area">
+            <div id="pieceToolbar" class="piece-toolbar">
+                <div class="toolbar-hint">点击画布<br>放置/移除</div>
                 <button class="piece-btn" data-type="caocao" title="曹操 (2x2)">
                     <span class="piece-icon caocao-icon">曹</span>
                 </button>
@@ -42,14 +42,23 @@
                 </button>
             </div>
 
+            <div class="game-container">
+                <canvas id="gameCanvas" width="320" height="400"></canvas>
+            </div>
+        </div>
+
+        <div id="customEditor" class="custom-editor" style="display: none;">
+            <div class="editor-header">
+                <input type="text" id="levelTitle" class="level-title-input" placeholder="输入关卡标题" maxlength="20">
+            </div>
+
             <div class="editor-actions">
                 <button id="saveLevelBtn" class="editor-btn">保存</button>
-                <button id="editLevelBtn" class="editor-btn">编辑选中</button>
-                <button id="playLevelBtn" class="editor-btn">开始游戏</button>
                 <button id="deleteLevelBtn" class="editor-btn">删除</button>
                 <button id="exportLevelBtn" class="editor-btn">导出</button>
                 <button id="importLevelBtn" class="editor-btn">导入</button>
                 <button id="testLevelBtn" class="editor-btn">测试当前</button>
+                <button id="playLevelBtn" class="editor-btn">开始游戏</button>
                 <button id="returnBtn" class="editor-btn">返回</button>
             </div>
 

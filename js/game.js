@@ -611,7 +611,9 @@ class Game {
         if (this.customLevelId) {
             const record = Storage.getCustomRecord(this.customLevelId);
             document.getElementById('customRecord').textContent = Storage.formatRecord(record);
-            document.getElementById('customRecordLabel').textContent = this.editingLevelName + '：';
+            // 优先使用 editingLevelName，否则从 currentLevelConfig 获取
+            const levelName = this.editingLevelName || (this.currentLevelConfig && this.currentLevelConfig.name) || '自定义关卡';
+            document.getElementById('customRecordLabel').textContent = levelName + '：';
             document.getElementById('customRecordItem').style.display = 'flex';
         }
     }

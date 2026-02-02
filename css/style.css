@@ -30,7 +30,7 @@ body {
 
 h1 {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
     font-size: 2.5em;
     font-weight: 700;
     letter-spacing: 4px;
@@ -38,6 +38,14 @@ h1 {
     text-shadow: 
         2px 2px 0 #8b6914,
         4px 4px 0 #5c4510;
+}
+
+.ai-hint {
+    text-align: center;
+    color: #8b6914;
+    font-size: 0.85em;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
 }
 
 .controls {
@@ -85,6 +93,41 @@ h1 {
     box-shadow: 3px 3px 0 #8b6914;
 }
 
+.level-select {
+    padding: 10px 15px;
+    border: 3px solid #d4af37;
+    background: #3d2817;
+    color: #f5e6d3;
+    font-size: 1em;
+    font-weight: 700;
+    font-family: 'Courier New', 'Microsoft YaHei', monospace;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 #1a0f08;
+    min-width: 200px;
+    outline: none;
+}
+
+.level-select:hover {
+    background: #4d3827;
+    border-color: #ffd700;
+}
+
+.level-select:focus {
+    border-color: #ffd700;
+}
+
+.level-select option {
+    background: #3d2817;
+    color: #f5e6d3;
+    padding: 8px;
+}
+
+.level-select optgroup {
+    background: #2d1b0e;
+    color: #ffd700;
+    font-weight: 700;
+}
+
 .custom-editor {
     background: #2d1b0e;
     padding: 15px;
@@ -118,12 +161,41 @@ h1 {
     border-color: #ffd700;
 }
 
-.piece-toolbar {
+.game-area {
     display: flex;
     justify-content: center;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.piece-toolbar {
+    display: none;
+    flex-direction: column;
     gap: 10px;
-    margin-bottom: 15px;
-    flex-wrap: wrap;
+    padding: 10px;
+    background: #2d1b0e;
+    border: 3px solid #8b6914;
+    box-shadow: 3px 3px 0 #1a0f08;
+}
+
+.game-area.edit-mode .piece-toolbar {
+    display: flex;
+}
+
+.toolbar-hint {
+    color: #d4af37;
+    font-size: 0.75em;
+    text-align: center;
+    padding: 5px 0;
+    border-bottom: 2px solid #4d3827;
+    margin-bottom: 5px;
+    line-height: 1.4;
+}
+
+/* 编辑模式下的布局 */
+.game-container {
+    flex-shrink: 0;
 }
 
 .piece-btn {
@@ -225,11 +297,6 @@ h1 {
     border-color: #f39c12;
 }
 
-#editLevelBtn {
-    background: #3498db;
-    border-color: #5dade2;
-}
-
 #playLevelBtn {
     background: #27ae60;
     border-color: #2ecc71;
@@ -327,7 +394,6 @@ h1 {
 .game-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
     padding: 10px;
     background: #2d1b0e;
     border: 3px solid #8b6914;
@@ -587,8 +653,16 @@ h1 {
         padding: 12px;
     }
 
+    .game-area {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
     .piece-toolbar {
+        flex-direction: row;
         gap: 8px;
+        padding: 8px;
     }
 
     .piece-btn {
@@ -658,26 +732,12 @@ h1 {
 }
 
 /* 编辑模式下的视觉提示 */
-.game-container.edit-mode {
+.game-area.edit-mode .game-container {
     border-color: #ffd700;
     box-shadow: 
         inset 3px 3px 0 #1a0f08,
         inset -3px -3px 0 #4d3827,
         0 0 10px rgba(255, 215, 0, 0.3);
-}
-
-.edit-mode-hint {
-    background: #2d1b0e;
-    padding: 10px;
-    border: 2px solid #8b6914;
-    margin-bottom: 15px;
-    text-align: center;
-    color: #d4af37;
-    font-size: 0.9em;
-}
-
-.edit-mode-hint strong {
-    color: #ffd700;
 }
 
 /* 禁用状态的统计信息和按钮 */
