@@ -28,7 +28,8 @@ function bindEvents() {
     const difficultyBtns = document.querySelectorAll('.difficulty-btn');
     difficultyBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-            const level = parseInt(btn.dataset.level);
+            const levelValue = btn.dataset.level;
+            const level = levelValue === 'custom' ? 'custom' : parseInt(levelValue);
             switchDifficulty(level);
         });
     });
@@ -47,6 +48,10 @@ function bindEvents() {
     // 新游戏按钮（胜利弹窗）
     document.getElementById('newGameBtn').addEventListener('click', () => {
         closeVictoryModal();
+        // 如果在自定义编辑模式下点击"再来一局"，返回到编辑模式而不是重新开始游戏
+        if (game.isEditMode) {
+            return;
+        }
         if (game.customLevelId) {
             game.init(game.customLevelId);
         } else {
@@ -188,13 +193,23 @@ function bindEvents() {
     // 保存按钮
     document.getElementById('saveLevelBtn').addEventListener('click', saveCustomLevel);
 
-    // 加载按钮
-    document.getElementById('loadLevelBtn').addEventListener('click', () => {
+    // 编辑选中按钮
+    document.getElementById('editLevelBtn').addEventListener('click', () => {
         const activeItem = document.querySelector('.level-item.active');
         if (activeItem) {
-            loadCustomLevel(activeItem.dataset.id);
+            loadCustomLevelForEdit(activeItem.dataset.id);
         } else {
-            alert('请先选择要加载的关卡');
+            alert('请先选择要编辑的关卡');
+        }
+    });
+
+    // 开始游戏按钮
+    document.getElementById('playLevelBtn').addEventListener('click', () => {
+        const activeItem = document.querySelector('.level-item.active');
+        if (activeItem) {
+            playCustomLevel(activeItem.dataset.id);
+        } else {
+            alert('请先选择要玩的关卡');
         }
     });
 
@@ -234,7 +249,7 @@ function bindEvents() {
 
 /**
  * 切换难度
- * @param {number} level - 新的难度等级
+ * @param {number|string} level - 新的难度等级 (1-3 或 'custom')
  */
 function switchDifficulty(level) {
     if (level === 'custom') {
@@ -248,7 +263,8 @@ function switchDifficulty(level) {
     const btns = document.querySelectorAll('.difficulty-btn');
     btns.forEach(btn => {
         btn.classList.remove('active');
-        if (parseInt(btn.dataset.level) === level) {
+        const btnLevel = btn.dataset.level === 'custom' ? 'custom' : parseInt(btn.dataset.level);
+        if (btnLevel === level) {
             btn.classList.add('active');
         }
     });
@@ -301,6 +317,7 @@ function switchToStandardMode() {
 function showCustomEditor() {
     document.getElementById('customEditor').style.display = 'block';
     updateCustomLevelList();
+    updateEditModeUI(true);
 }
 
 /**
@@ -308,6 +325,43 @@ function showCustomEditor() {
  */
 function hideCustomEditor() {
     document.getElementById('customEditor').style.display = 'none';
+    updateEditModeUI(false);
+    document.getElementById('levelTitle').value = '';
+}
+
+/**
+ * 更新编辑模式的UI状态
+ * @param {boolean} isEditMode - 是否为编辑模式
+ */
+function updateEditModeUI(isEditMode) {
+    const gameContainer = document.querySelector('.game-container');
+    const stats = document.querySelector('.stats');
+    const gameButtons = document.querySelector('.game-buttons');
+    
+    if (isEditMode) {
+        gameContainer.classList.add('edit-mode');
+        stats.classList.add('disabled');
+        gameButtons.classList.add('disabled');
+        
+        // 添加编辑提示（如果不存在）
+        let hint = document.querySelector('.edit-mode-hint');
+        if (!hint) {
+            hint = document.createElement('div');
+            hint.className = 'edit-mode-hint';
+            hint.innerHTML = '<strong>编辑模式：</strong>点击画布放置/移除滑块';
+            gameContainer.insertBefore(hint, gameContainer.firstChild);
+        }
+    } else {
+        gameContainer.classList.remove('edit-mode');
+        stats.classList.remove('disabled');
+        gameButtons.classList.remove('disabled');
+        
+        // 移除编辑提示
+        const hint = document.querySelector('.edit-mode-hint');
+        if (hint) {
+            hint.remove();
+        }
+    }
 }
 
 /**
@@ -319,14 +373,24 @@ function updateCustomLevelList() {
 
     container.innerHTML = '';
 
+    // 防御性检查：确保 levels 是数组
+    if (!Array.isArray(levels)) {
+        console.error('获取自定义关卡列表失败：数据不是数组');
+        container.innerHTML = '<div class="level-empty-state">数据错误，请刷新页面重试</div>';
+        return;
+    }
+
     if (levels.length === 0) {
-        container.innerHTML = '<div class="level-item" style="cursor: default;">暂无自定义关卡</div>';
+        container.innerHTML = '<div class="level-empty-state">暂无自定义关卡，创建一个吧！</div>';
         return;
     }
 
     levels.forEach(level => {
         const item = document.createElement('div');
         item.className = 'level-item';
+        if (game.customLevelId === level.id) {
+            item.classList.add('active');
+        }
         item.dataset.id = level.id;
 
         const nameDiv = document.createElement('div');
@@ -336,15 +400,20 @@ function updateCustomLevelList() {
         const infoDiv = document.createElement('div');
         infoDiv.className = 'level-item-info';
         const date = new Date(level.updatedAt);
-        infoDiv.textContent = `更新于 ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+        infoDiv.textContent = `${level.pieces.length}个滑块 · 更新于 ${date.toLocaleDateString()}`;
 
         item.appendChild(nameDiv);
         item.appendChild(infoDiv);
 
+        // 点击关卡项只进行选中，不直接加载
         item.addEventListener('click', () => {
             document.querySelectorAll('.level-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
-            loadCustomLevel(level.id);
+        });
+        
+        // 双击关卡项直接开始游戏
+        item.addEventListener('dblclick', () => {
+            playCustomLevel(level.id);
         });
 
         container.appendChild(item);
@@ -382,16 +451,36 @@ function saveCustomLevel() {
 }
 
 /**
- * 加载指定自定义关卡进行编辑
+ * 加载指定自定义关卡到编辑器
  * @param {string} id - 关卡ID
  */
-function loadCustomLevel(id) {
+function loadCustomLevelForEdit(id) {
     if (game.loadCustomLevel(id)) {
         const levelConfig = getCustomLevelConfig(id);
         if (levelConfig) {
             document.getElementById('levelTitle').value = levelConfig.name;
+            game.editingLevelName = levelConfig.name;
         }
     }
+}
+
+/**
+ * 开始玩指定的自定义关卡
+ * @param {string} id - 关卡ID
+ */
+function playCustomLevel(id) {
+    const levelConfig = getCustomLevelConfig(id);
+    if (!levelConfig) {
+        alert('关卡不存在');
+        return;
+    }
+
+    // 退出编辑模式，进入游戏模式
+    switchToStandardMode();
+
+    // 初始化游戏
+    game.init(id);
+    game.updateRecordsDisplay();
 }
 
 /**
@@ -473,7 +562,7 @@ function handleFileImport(file) {
 
             Storage.saveCustomLevel(id, levelData);
             updateCustomLevelList();
-            loadCustomLevel(id);
+            loadCustomLevelForEdit(id);
 
             alert('关卡导入成功！');
         } catch (error) {
@@ -494,9 +583,22 @@ function testCustomLevel() {
         return;
     }
 
+    // 如果没有保存过，先自动保存
     if (!game.customLevelId) {
-        alert('请先保存关卡');
-        return;
+        const titleInput = document.getElementById('levelTitle');
+        const title = titleInput.value.trim();
+        if (!title) {
+            alert('请先输入关卡标题并保存');
+            titleInput.focus();
+            return;
+        }
+        // 自动保存
+        game.editingLevelName = title;
+        const levelData = game.getLevelDataForSave();
+        const id = generateCustomLevelId();
+        Storage.saveCustomLevel(id, levelData);
+        game.customLevelId = id;
+        updateCustomLevelList();
     }
 
     game.exitEditMode();

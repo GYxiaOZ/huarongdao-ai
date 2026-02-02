@@ -116,8 +116,24 @@ const Storage = {
      * @returns {Array} 自定义关卡数组
      */
     getCustomLevels() {
-        const levels = localStorage.getItem(this.CUSTOM_LEVELS_KEY);
-        return levels ? JSON.parse(levels) : [];
+        try {
+            const levels = localStorage.getItem(this.CUSTOM_LEVELS_KEY);
+            if (!levels) {
+                return [];
+            }
+            const parsed = JSON.parse(levels);
+            // 确保返回的是数组
+            if (!Array.isArray(parsed)) {
+                console.warn('自定义关卡数据格式错误，已重置');
+                localStorage.removeItem(this.CUSTOM_LEVELS_KEY);
+                return [];
+            }
+            return parsed;
+        } catch (e) {
+            console.error('读取自定义关卡失败:', e);
+            localStorage.removeItem(this.CUSTOM_LEVELS_KEY);
+            return [];
+        }
     },
 
     /**

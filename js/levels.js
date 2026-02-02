@@ -244,7 +244,9 @@ function getCustomLevelConfig(id) {
  * @returns {Array} 自定义关卡数组
  */
 function getAllCustomLevels() {
-    return Storage.getCustomLevels();
+    const levels = Storage.getCustomLevels();
+    // 确保返回的是数组
+    return Array.isArray(levels) ? levels : [];
 }
 
 /**

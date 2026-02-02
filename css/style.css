@@ -166,6 +166,7 @@ h1 {
 
 .piece-btn.selected .piece-icon {
     color: #1a0f08;
+    text-shadow: none;
 }
 
 .caocao-icon {
@@ -175,6 +176,8 @@ h1 {
 
 .general-v-icon {
     background: #f39c12;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .general-h-icon {
@@ -218,13 +221,18 @@ h1 {
 }
 
 #saveLevelBtn {
-    background: #27ae60;
-    border-color: #2ecc71;
+    background: #e67e22;
+    border-color: #f39c12;
 }
 
-#loadLevelBtn {
+#editLevelBtn {
     background: #3498db;
     border-color: #5dade2;
+}
+
+#playLevelBtn {
+    background: #27ae60;
+    border-color: #2ecc71;
 }
 
 #deleteLevelBtn {
@@ -264,9 +272,16 @@ h1 {
     color: #ffd700;
     font-size: 1em;
     font-weight: 700;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     text-align: center;
     letter-spacing: 1px;
+}
+
+.custom-level-list .hint {
+    color: #8b6914;
+    font-size: 0.8em;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 .level-list-container {
@@ -640,6 +655,48 @@ h1 {
     .modal-content p {
         font-size: 1em;
     }
+}
+
+/* 编辑模式下的视觉提示 */
+.game-container.edit-mode {
+    border-color: #ffd700;
+    box-shadow: 
+        inset 3px 3px 0 #1a0f08,
+        inset -3px -3px 0 #4d3827,
+        0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.edit-mode-hint {
+    background: #2d1b0e;
+    padding: 10px;
+    border: 2px solid #8b6914;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #d4af37;
+    font-size: 0.9em;
+}
+
+.edit-mode-hint strong {
+    color: #ffd700;
+}
+
+/* 禁用状态的统计信息和按钮 */
+.stats.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.game-buttons.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* 空状态提示 */
+.level-empty-state {
+    text-align: center;
+    color: #8b6914;
+    padding: 20px;
+    font-style: italic;
 }
 
 /* 横屏模式优化 */

@@ -283,7 +283,8 @@ class Game {
     }
 
     handleMouseDown(canvasX, canvasY) {
-        if (this.isSolved || this.isPaused || this.isAnimating) {
+        // 编辑模式下允许操作，游戏模式下需要检查状态
+        if (!this.isEditMode && (this.isSolved || this.isPaused || this.isAnimating)) {
             return;
         }
 
@@ -299,7 +300,11 @@ class Game {
             if (piece) {
                 this.removePiece(piece);
             } else if (this.selectedPieceType) {
-                this.addPieceToBoard(this.selectedPieceType, gridX, gridY);
+                const success = this.addPieceToBoard(this.selectedPieceType, gridX, gridY);
+                if (!success) {
+                    // 添加失败时给出视觉反馈（可以通过闪烁边框等方式）
+                    this.render();
+                }
             }
             return;
         }
@@ -579,7 +584,13 @@ class Game {
         const secs = this.time % 60;
         const timeStr = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
 
-        const levelName = this.customLevelId ? this.editingLevelName : this.currentLevelConfig.name;
+        // 获取关卡名称，提供多重后备确保不为空
+        let levelName = '未知关卡';
+        if (this.customLevelId) {
+            levelName = this.editingLevelName || '自定义关卡';
+        } else if (this.currentLevelConfig && this.currentLevelConfig.name) {
+            levelName = this.currentLevelConfig.name;
+        }
 
         message.innerHTML = `
             <strong>${levelName}</strong><br>
@@ -661,8 +672,17 @@ class Game {
             return false;
         }
 
+        // 检查滑块类型限制
+        if (type === PIECE_TYPES.CAOCAO) {
+            // 检查是否已存在曹操
+            const existingCaocao = this.pieces.find(p => p.type === PIECE_TYPES.CAOCAO);
+            if (existingCaocao) {
+                return false;
+            }
+        }
+
         const newPiece = {
-            id: this.generatePieceId(),
+            id: type === PIECE_TYPES.CAOCAO ? 'C' : this.generatePieceId(),
             type: type,
             x: x,
             y: y,
