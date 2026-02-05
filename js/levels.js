@@ -14,12 +14,12 @@ const PIECE_TYPES = {
 // 自定义关卡ID前缀
 const CUSTOM_LEVELS_PREFIX = 'custom_';
 
-// 滑块颜色配置
+// 滑块颜色配置 - Geek Neon Style
 const PIECE_COLORS = {
-    caocao: '#e74c3c',      // 红色 - 曹操
-    general_v: '#f39c12',   // 橙色 - 竖将
-    general_h: '#27ae60',   // 绿色 - 横将
-    soldier: '#3498db'      // 蓝色 - 兵卒
+    caocao: '#EF4444',      // Neon Red - 曹操
+    general_v: '#EAB308',   // Neon Yellow - 竖将
+    general_h: '#22C55E',   // Neon Green - 横将
+    soldier: '#06B6D4'      // Neon Cyan - 兵卒
 };
 
 /**

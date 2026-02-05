@@ -129,8 +129,19 @@ class Game {
     render() {
         const { ctx, canvas } = this;
 
-        ctx.fillStyle = '#2d1b0e';
+        // Geek style dark background
+        ctx.fillStyle = '#0F172A';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Draw subtle grid background pattern
+        ctx.fillStyle = '#1E293B';
+        for (let x = 0; x < this.gridWidth; x++) {
+            for (let y = 0; y < this.gridHeight; y++) {
+                if ((x + y) % 2 === 0) {
+                    ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                }
+            }
+        }
 
         this.drawGrid();
 
@@ -154,8 +165,10 @@ class Game {
     drawGrid() {
         const { ctx } = this;
 
-        ctx.strokeStyle = '#8b6914';
-        ctx.lineWidth = 3;
+        // Neon cyan grid lines
+        ctx.strokeStyle = '#06B6D4';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.4;
 
         for (let x = 0; x <= this.gridWidth; x++) {
             ctx.beginPath();
@@ -170,6 +183,8 @@ class Game {
             ctx.lineTo(this.gridWidth * this.cellSize, y * this.cellSize);
             ctx.stroke();
         }
+
+        ctx.globalAlpha = 1.0;
     }
 
     drawPiece(piece) {
@@ -179,26 +194,64 @@ class Game {
         const width = piece.width * this.cellSize - this.padding * 2;
         const height = piece.height * this.cellSize - this.padding * 2;
 
-        const mainColor = piece.id === 'C' ? '#ffd700' : piece.color;
-        const darkColor = piece.id === 'C' ? '#8b6914' : this.darkenColor(piece.color, 30);
-        const borderColor = piece.id === 'C' ? '#fff' : '#d4af37';
+        const mainColor = piece.color;
+        const glowColor = piece.color;
+        const isCaocao = piece.id === 'C';
 
-        ctx.fillStyle = mainColor;
+        // Draw glow effect
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 15;
+
+        // Main piece body with gradient
+        const gradient = ctx.createLinearGradient(x, y, x, y + height);
+        gradient.addColorStop(0, mainColor);
+        gradient.addColorStop(1, this.darkenColor(mainColor, 40));
+        ctx.fillStyle = gradient;
         ctx.fillRect(x, y, width, height);
 
-        ctx.fillStyle = darkColor;
-        ctx.fillRect(x, y + height - 4, width, 4);
-        ctx.fillRect(x + width - 4, y, 4, height);
+        // Reset shadow
+        ctx.shadowBlur = 0;
 
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(x, y, width, height);
+        // Inner highlight border
+        ctx.strokeStyle = isCaocao ? '#F8FAFC' : this.lightenColor(mainColor, 30);
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x + 2, y + 2, width - 4, height - 4);
 
-        ctx.fillStyle = '#1a0f08';
-        ctx.font = piece.id === 'C' ? 'bold 24px "Courier New"' : 'bold 20px "Courier New"';
+        // Outer glow border
+        ctx.strokeStyle = glowColor;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.6;
+        ctx.strokeRect(x - 1, y - 1, width + 2, height + 2);
+        ctx.globalAlpha = 1.0;
+
+        // Corner accents
+        ctx.fillStyle = '#F8FAFC';
+        const cornerSize = 4;
+        // Top-left
+        ctx.fillRect(x, y, cornerSize, 2);
+        ctx.fillRect(x, y, 2, cornerSize);
+        // Top-right
+        ctx.fillRect(x + width - cornerSize, y, cornerSize, 2);
+        ctx.fillRect(x + width - 2, y, 2, cornerSize);
+        // Bottom-left
+        ctx.fillRect(x, y + height - 2, cornerSize, 2);
+        ctx.fillRect(x, y + height - cornerSize, 2, cornerSize);
+        // Bottom-right
+        ctx.fillRect(x + width - cornerSize, y + height - 2, cornerSize, 2);
+        ctx.fillRect(x + width - 2, y + height - cornerSize, 2, cornerSize);
+
+        // Text
+        ctx.fillStyle = '#020617';
+        ctx.font = isCaocao ? 'bold 22px "SF Mono", Monaco, Consolas, monospace' : 'bold 18px "SF Mono", Monaco, Consolas, monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(piece.name, x + width / 2, y + height / 2);
+
+        // Subtle scanline on piece
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+        for (let i = 0; i < height; i += 4) {
+            ctx.fillRect(x, y + i, width, 1);
+        }
     }
 
     drawPiecePreview(piece, x, y) {
@@ -208,14 +261,18 @@ class Game {
         const width = piece.width * this.cellSize - this.padding * 2;
         const height = piece.height * this.cellSize - this.padding * 2;
 
-        ctx.globalAlpha = 0.6;
+        ctx.globalAlpha = 0.5;
 
+        // Preview piece
         ctx.fillStyle = piece.color;
         ctx.fillRect(drawX, drawY, width, height);
 
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 3;
+        // Preview border
+        ctx.strokeStyle = '#22C55E';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
         ctx.strokeRect(drawX, drawY, width, height);
+        ctx.setLineDash([]);
 
         ctx.globalAlpha = 1.0;
     }
@@ -236,14 +293,19 @@ class Game {
         const width = pieceConfig.width * this.cellSize - this.padding * 2;
         const height = pieceConfig.height * this.cellSize - this.padding * 2;
 
-        ctx.globalAlpha = 0.5;
+        ctx.globalAlpha = 0.4;
 
+        // Preview fill
         ctx.fillStyle = pieceConfig.color;
         ctx.fillRect(x, y, width, height);
 
-        ctx.strokeStyle = '#ffd700';
-        ctx.lineWidth = 3;
+        // Animated border
+        ctx.strokeStyle = '#22C55E';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.lineDashOffset = -Date.now() / 20;
         ctx.strokeRect(x, y, width, height);
+        ctx.setLineDash([]);
 
         ctx.globalAlpha = 1.0;
     }
@@ -252,18 +314,45 @@ class Game {
         const { ctx } = this;
         const x = 1.5 * this.cellSize;
         const y = 4 * this.cellSize;
+        const width = this.cellSize;
+        const height = 20;
 
-        ctx.fillStyle = '#4d3827';
-        ctx.fillRect(x, y + this.cellSize, this.cellSize, 20);
+        // Exit portal background
+        ctx.fillStyle = '#1E293B';
+        ctx.fillRect(x, y + this.cellSize, width, height);
 
-        ctx.fillStyle = '#ffd700';
-        ctx.fillRect(x + 30, y + this.cellSize + 5, 20, 10);
+        // Exit glow
+        ctx.shadowColor = '#22C55E';
+        ctx.shadowBlur = 10;
 
-        ctx.fillStyle = '#ffd700';
-        ctx.font = 'bold 14px "Courier New"';
+        // Exit arrow
+        ctx.fillStyle = '#22C55E';
+        const arrowX = x + width / 2 - 10;
+        const arrowY = y + this.cellSize + 5;
+        ctx.beginPath();
+        ctx.moveTo(arrowX + 10, arrowY);
+        ctx.lineTo(arrowX + 20, arrowY + 5);
+        ctx.lineTo(arrowX + 10, arrowY + 10);
+        ctx.lineTo(arrowX + 10, arrowY + 7);
+        ctx.lineTo(arrowX, arrowY + 7);
+        ctx.lineTo(arrowX, arrowY + 3);
+        ctx.lineTo(arrowX + 10, arrowY + 3);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+
+        // Exit text
+        ctx.fillStyle = '#22C55E';
+        ctx.font = 'bold 12px "SF Mono", Monaco, Consolas, monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText('出口', x + this.cellSize / 2, y + this.cellSize + 10);
+        ctx.fillText('EXIT', x + width / 2, y + this.cellSize + height + 10);
+
+        // Animated scanline
+        const scanY = y + this.cellSize + (Date.now() % 1000) / 1000 * height;
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.3)';
+        ctx.fillRect(x, scanY, width, 2);
     }
 
     darkenColor(color, amount) {
